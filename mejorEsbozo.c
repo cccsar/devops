@@ -1,24 +1,25 @@
 
 #include <stdio.h> 
 #include <stdlib.h>
-#include<sys/types.h> 
-#include<dirent.h> 
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <fcntl.h>  
+#include <dirent.h> 
 #include <string.h> 
 #include <unistd.h>
 
-#define max(x,y) (x>y)? x: y; 	// esto puede estar malo	###
-#define MY_LIMIT max(RLIMIT_FSIZE,SSIZE_MAX) //estas constantes pueden no ser conocidaas, verificar ###
+#define LOCAL_LIMIT 2147479552 
 
 
 void myCat(int fd_source, int fd_dest) { 
 		
-	char buffer[MY_LIMIT+1]; 
+	char buffer[LOCAL_LIMIT-1]; 
 
-	while( read(fd_source, buffer, MY_LIMIT) != EOF) { 
+	while( read(fd_source, buffer, LOCAL_LIMIT) != EOF) { 
 		//verificar lectura y escritura apropiada
 		//
 		//utilizar desplazamiento %TAMANO_DEF para copiar metadata
-		write(fd_dest, buffer, MY_LIMIT); 
+		write(fd_dest, buffer, LOCAL_LIMIT); 
 	}
 }
 
@@ -44,20 +45,20 @@ void fileCat(DIR *dir, char *dirname, int fd) {
 				strcat(pathname,"/"); 
 
 			strcat(pathname, current_ent->d_name);	//modifico pathname
-			//printf("%s\n",pathname); 
+			printf("%s\n",pathname); 
 
 			if (current_ent->d_type == DT_DIR )  
 			{ 
-				if ( (ith_pointer = opendir(pathname)) == NULL )  	//abro directorio	
+				if ( (ith_pointer = opendir(pathname)) == NULL )  	//verifico que abra el dir
 				{
 					perror("opendir");
 					return; 
 				}
 
-				fileCat(ith_pointer, pathname); //esta llamada cambia pathname, ergo el buffer
+				fileCat(ith_pointer, pathname, fd); //esta llamada cambia pathname, ergo el buffer
 				closedir(ith_pointer); 					//cierro directorio
 			}
-			else if ( current_ent->d_type == DT_REG) 
+			else if ( current_ent->d_type == DT_REG)			//###Leer man de readdir() 
 			{
 				int current_fd; 
 
@@ -78,7 +79,7 @@ int main (int argc, char **argv) {
 	struct dirent *entry; 
 	char *local_path = (char*) malloc(256*sizeof(char));
 	int fd, ith_fd,  i; //file descriptor for the file to be created
-	struct stat *st;
+	struct stat st;
 	/* comandline goes like  fileCat name_dest args** */
 	/*First assuming the commandline goes right */
 	
@@ -95,27 +96,33 @@ int main (int argc, char **argv) {
 	// 		lo concateno a mi arch_dest
 	// 	si es un directorio, llamo a opendir
 	for(i=2; i<argc; i++) { 
-		ith_fd = open(argv[i], O_RDONLY); 	//Estoy asumiendo que lo que pasan es un nombre de archivo existente
 
-		if( stat(ith_fd, st) != 0) 
+		if (ith_fd = open(argv[i], O_RDONLY) == -1)  			// verifico que el archivo se abra
+		{
+			printf("%s\n",argv[i]);
+			fprintf(stderr, "error al abrir archivo \n");
+			perror("open\n"); 
+			exit(-1); 
+		}
+
+		if( fstat(ith_fd, &st) != 0) 					//verifico que el stat se guarde
 		{
 			fprintf(stderr,"error al leer estado\n");
 			perror("stat");
-			exit(-1);
+			exit(-2);
 		}
 
-		if( (st->st_mode && S_IFMT) == S_IFREG ) 	//El argumento pasado es archivo regular 
+		if( (st.st_mode && S_IFMT) == S_IFREG ) 	//C1: El argumento pasado es archivo regular 
 		{
 			myCat(ith_fd, fd);		
 		}
-		else if( (st->st_mode && S_IFMT) == S_IFDIR)   //El argumento pasado es directorio
-								//falta ajuste para el resto de tipos de arhcivo
+		else if( (st.st_mode && S_IFMT) == S_IFDIR)   //C2: El argumento pasado es directorio
 		{
 
 			strcpy(local_path, "./"); 
 			strcat(local_path, argv[i]); 
 
-			if ( (dir=opendir(local_path)) == NULL ) 
+			if ( (dir=opendir(local_path)) == NULL ) 		//verifico que el dir abra
 			{ 
 				fprintf(stderr,"error opening directory\n"); 
 				perror("opendir"); 
