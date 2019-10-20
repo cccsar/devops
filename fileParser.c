@@ -77,6 +77,7 @@ off_t getFieldSize(int fd_orig, int roof,int floor) {
 
 	//fprintf(stdout,"size of field %d\n",current_offset); #dbg#
 	required_size = current_offset-floor;
+	printf("name size: %ld\n",required_size);
 	
 	/* relocate the offset in the beggining. This could be avoided */
 	final_offset = lseek(fd_orig,floor,SEEK_SET);
@@ -93,8 +94,10 @@ char *getField(int fd, int roof, int floor) {
 	off_t field_length;
 
 	field_length = getFieldSize(fd, roof, floor);
-	name = (char*) malloc(field_length);
+	name = (char*) malloc(field_length+1);
 	just_read = read(fd, name, field_length);
+	printf("numero de caracteres leido: %d\n",just_read);
+	printf("caracter leido: %s\n",name);
 
 	final_offset = lseek(fd, roof, SEEK_SET);
 	//fprintf(stdout,"\t\tcurrent offset: %d\n",final_offset);	#dbg#
