@@ -11,8 +11,7 @@
 
 #define MAX_RW 16
 
-#define MY_PERM S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH
-#define SAVE_UNITS 16 
+#define MY_PERM S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH //this is probably optional ###
 
 #define FNAME_LIMIT 256
 #define FMODE_LIMIT 10
@@ -50,62 +49,79 @@ void writeToDest(int fd_dest, char* text, int size) {	//It is only appended if t
  * size field, and padds it with a special character (by writting) until fitting a predefined
  * fixed length field.
  *
+ * tail_flag == TRUE: Ill be adding the tail, hence concern about reminder and quotient
+ * else: Ill be adding header fields, hence i'll only concern about diff
+ *
  * fd_dest: file descriptor of the file to write.
  * content_size: 
  * token_field_size:
  * tail_flag: 
  *
  */
-void fillField(int fd_dest,int content_size, int token_field_size, int tail_flag) {
+void fillField(int fd_dest,int content_size, int token_field_size) {
 	
-	int reminder, to_write_size, k;
+	int k, quot, diff, reminder, to_write_size, preferred_size;
+	
+	/* This is added to adjust the buffer for writting depending on the field being set */
 	char buffer[token_field_size];
 
 	/* here i calculate how much to stuff */
-	reminder = token_field_size%content_size;
+	diff = token_field_size - content_size;
 
-	if(reminder == 0 )
-		to_write_size = (tail_flag)? content_size: token_field_size;
+	if(diff == 0)
+		to_write_size = token_field_size;
 	else
-	{
-		/* This is added to separate head token stuffing from tail token stufifng */
-		to_write_size =  (tail_flag)? reminder : token_field_size - reminder;
-	}
+		to_write_size = diff;
 
 	/* create the stuff string and append It to my fd */
 	for (k=0; k<to_write_size; ++k)
 		buffer[k] = STUFF_TOKEN;
 
-	//printf("%d\n",k);
+	//printf("%d\n",k);	//#dbg#
 	writeToDest(fd_dest, buffer, to_write_size);
 }
 
 
 /* setHeadFields
  * ----------
- * Sets the header fields for files.
+ * Sets the header fields for files. This fields are name, mode and 
+ * only for regular files, the size.
  *
  * state: state of the file whose attributes are being added to the archive.
  * fd_dest: file descriptor of my archive.
  * name: Name of the file being processed.
  *
  */
-void setHeadFields(struct stat state, int fd_dest, char *name) {
+void setHeadFields(struct stat state, int fd_dest, char *name, int is_dir) {
 						//Aun no verifico que lea todo lo que debe leer
+	/* There could be more fields added or removed at will. This is 
+	 * for now, just a test function */
 	int len;
+	char space ;
 
-	/* append and stuff the name of the file */
+	space = '@';
+
+
+	/* append and stuff the NAME of the file */
 	len = dprintf(fd_dest,"%s",name); 
-	fillField(fd_dest, len, FNAME_LIMIT, FALSE);
+	len += dprintf(fd_dest,"%c",space);
+	fillField(fd_dest, len, FNAME_LIMIT);
 
-	/* append and stuff the size of the file */
-	len = dprintf(fd_dest,"%d",(int)state.st_size); 
-	fillField(fd_dest, len, FSIZE_LIMIT, FALSE); 
-
-	/* append and stuff the mode of the file */
+	/* append and stuff the MODE of the file */
 	len = dprintf(fd_dest,"%ld",(unsigned long)state.st_mode);	
-	fillField(fd_dest, len, FMODE_LIMIT, FALSE);
+	len += dprintf(fd_dest,"%c",space);
+	fillField(fd_dest, len, FMODE_LIMIT);
+	
+	if(!is_dir)
+       	{
+		/* append and stuff the SIZE of the file */
+		len = dprintf(fd_dest,"%d",(int)state.st_size); 
+		len += dprintf(fd_dest,"%c",space);
+		fillField(fd_dest, len, FSIZE_LIMIT); 
+
+	}
 }
+
 
 
 /* fileWriter
@@ -139,7 +155,7 @@ void fileWriter(int fd_source, int fd_dest) {
 /* traverseDir
  * ----------
  * Used to traverse a directory tree and write file fields into the archive, along with
- * the file content. It does this recursively
+ * the file content. It does this recursively, in a similar way to a dfs graph traverse.
  *
  * dir: Directory pointer to the dir to traverse.
  * dirname: name of the directory to traverse.
@@ -171,7 +187,12 @@ void traverseDir(DIR *dir, char *dirname, int fd) {
 				strcat(pathname,"/"); 
 
 			strcat(pathname, current_ent->d_name);	//modifico pathname
-			printf("%s\n",pathname); 
+			printf("archiving %s\n",pathname); 
+
+			struct stat current_file_status; 
+
+			if(stat(pathname,&current_file_status) == -1)
+				perror("stat");
 
 			/* If the current entry is a directory, set its header 
 			 * fields, then open and call traverseDir recursively
@@ -181,16 +202,18 @@ void traverseDir(DIR *dir, char *dirname, int fd) {
 				ith_pointer = opendir(pathname);
 				if ( ith_pointer == NULL )  			//#a#d
 				{
+					fprintf(stderr,"error opening %s\n",pathname);
 					perror("opendir");
-					break; 
 				}
+				else {
 
-				len = dprintf(fd,"%s",pathname); 		//###
-				fillField(fd, len, FNAME_LIMIT, FALSE);
-				
-				traverseDir(ith_pointer, pathname, fd); //esta llamada cambia pathname, ergo el buffer
+					/* This adds a space at the end of the name part of the field */
+					/* in order to recognize termination */
+					setHeadFields(current_file_status, fd, pathname, TRUE);
+					traverseDir(ith_pointer, pathname, fd); //esta llamada cambia pathname, ergo el buffer
 
-				closedir(ith_pointer); 				//#c#d
+					closedir(ith_pointer); 				//#c#d
+				}
 			}
 			/* If the current entry is a regular file, set its header
 			 * fields
@@ -200,25 +223,18 @@ void traverseDir(DIR *dir, char *dirname, int fd) {
 				int current_fd; 
 
 				current_fd = open(pathname,O_RDONLY); 		//#a#
+
 				if(current_fd == -1) 
 				{
+					fprintf(stderr,"error opening %s\n",pathname);
 					perror("open");
-					break;
 				}
+				else { 
+					setHeadFields(current_file_status, fd, pathname, FALSE);
+					fileWriter(current_fd, fd);	
 
-				struct stat current_file_status;
-
-				if(stat(pathname,&current_file_status) == -1)
-				{
-					perror("stat");
-					break;
+					close(current_fd);				//#c#
 				}
-
-				setHeadFields(current_file_status,fd, pathname);
-				fileWriter(current_fd, fd);	
-				fillField(fd, SAVE_UNITS, current_file_status.st_size, TRUE);
-
-				close(current_fd);				//#c#
 			}
 				
 			
@@ -239,7 +255,10 @@ int main (int argc, char **argv) {
 	/*First assuming the commandline goes right */
 	 
 
-	fd = open(argv[1], O_WRONLY | O_APPEND | O_TRUNC | O_CREAT, S_IRWXU | S_IRGRP); 
+	umask(0000); 				//### Probablemente quiera cambiarla cuando vaya a crear
+						//mejor dejar que open(..O_CREATE) haga el set de los permisos
+						//la umask sera la del usuario
+	fd = open(argv[1], O_WRONLY | O_APPEND | O_TRUNC | O_CREAT, MY_PERM);
 	if (fd == -1)
 	{
 		fprintf(stderr, "error opening directory\n");
@@ -253,27 +272,23 @@ int main (int argc, char **argv) {
 		ith_fd = open(argv[i], O_RDONLY);	
 		if (ith_fd == -1) 						//#a#	
 		{
-			fprintf(stderr, "error, input is ./out something.my tar files..\n");
-			perror("open\n"); 
-			exit(-1); 
+			fprintf(stderr,"error opening %s\n",argv[i]);
+			perror("open"); 
 		}
 
 		if( stat(argv[i], &st) != 0) 					//verifico que el stat se guarde
 		{
-			fprintf(stderr,"error reading status\n");
 			perror("stat");
-			exit(-2);
 		}
 
 		
-		printf("%s\n",argv[i]);
+		printf("archiving %s\n",argv[i]);
 
 		if( (st.st_mode & S_IFMT) == S_IFREG ) 	//C1: El argumento pasado es archivo regular 
 		{	
 			/* Set propper head and tail for ith file in the cmd */
-			setHeadFields(st,fd, argv[i]);
+			setHeadFields(st, fd, argv[i], FALSE);
 			fileWriter(ith_fd, fd);		
-			fillField(fd, SAVE_UNITS, st.st_size, TRUE);
 
 			close(ith_fd);				//cierro despues de copiar
 		}
@@ -289,9 +304,8 @@ int main (int argc, char **argv) {
 				fprintf(stderr,"error opening directory\n"); 
 				perror("opendir"); 
 			}
-			int len;
-			len = dprintf(fd,"%s",argv[i]); 
-			fillField(fd, len, FNAME_LIMIT, FALSE);
+
+			setHeadFields(st, fd, argv[i], TRUE);
 			traverseDir(dir, argv[i], fd);  		//###convendria que ajuste esto para que trabaje con fd
 
 			closedir(dir);						//#c#d

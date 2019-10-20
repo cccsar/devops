@@ -9,19 +9,25 @@
 #include <unistd.h>
 #include <string.h>
 
+#define TRUE 1
+#define MY_PERM S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+#define PERM_UMASK S_IRWXU & S_IRWXG & S_IRWXO
+
 int main (int argc, char **argv) { 
 
-	/*
+	int fd, len, prev_mask;
 	struct stat st;
 
-	if( stat(argv[1], &st) == -1)
-		perror("stat");
+	prev_mask = umask(0000);
+	fd = open(argv[1], O_CREAT, MY_PERM);
+	fstat(fd, &st);
 
-	printf("%d\n",sizeof((long long)st.st_size));
-	*/
+	close(fd);
 
-	printf("%d\n",sizeof(S_IFSOCK));
-	
+	printf("current umask: %o\tmy_perm: %o\n",0000,MY_PERM);
+	printf("resulting mask %o\n",MY_PERM & ~0000);
+
+
 	return 0; 
 }
 
