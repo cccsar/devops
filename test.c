@@ -15,18 +15,11 @@
 
 int main (int argc, char **argv) { 
 
-	int fd, len, prev_mask;
-	struct stat st;
-
-	prev_mask = umask(0000);
-	fd = open(argv[1], O_CREAT, MY_PERM);
-	fstat(fd, &st);
-
-	close(fd);
-
-	printf("current umask: %o\tmy_perm: %o\n",0000,MY_PERM);
-	printf("resulting mask %o\n",MY_PERM & ~0000);
-
+	char prueba, otra, otra_mas;
+	prueba = 'a'; 
+	scanf("%c",&otra_mas); 
+	printf("%d\n",prueba);
+	printf("%d\n",otra_mas);
 
 	return 0; 
 }
