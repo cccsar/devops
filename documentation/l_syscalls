@@ -1,0 +1,40 @@
+mlock (2)            - lock and unlock memory
+setrlimit (2)        - get/set resource limits
+brk (2)              - change data segment size
+mmap (2)             - map or unmap files or devices into memory
+
+time (2)             - get time in seconds
+
+fstat (2)            - get file status
+
+execve (2)           - execute program
+
+process control:
+fork (2)             - create a child process
+_exit (2)            - terminate the calling process
+wait (2)             - wait for process to change state
+
+file manip:
+open (2)             - open and possibly create a file
+close (2)            - close a file descriptor
+read (2)             - read from a file descriptor
+write (2)            - write to a file descriptor
+
+device manip:
+ioctl (2)            - control device
+read (2)             - read from a file descriptor
+write (2)            - write to a file descriptor
+
+information maintenance: 
+getpid (2)           - get process identification
+alarm (2)            - set an alarm clock for delivery of a signal
+
+communication: 
+pipe (2)             - create pipe
+shmget (2)           - allocates a System V shared memory segment
+mmap (2)             - map or unmap files or devices into memory
+
+protection:
+chmod (2)            - change permissions of a file
+umask (2)            - set file mode creation mask
+chown (2)            - change ownership of a file

@@ -1,0 +1,40 @@
+General file handling functions that use file descriptors:
+
+	int open(const char *pathname, int flags[,int mode]); //returns file descriptor
+		FILE *fopen(const char *path, const char *mode);  // returns file pointer
+		FILE *fdopen(int fd, const char *mode);
+		size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream); // r # of items read
+		size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream); // r # of items written
+
+	ssize_t read(int fd,void *buff, size_t count); //returns (o.s.)? the number of bytes read
+	ssize_t write(int fd,void *buff, size_t count); //returns (o.s.)? the number of bytes written
+	off_t lseek(int fd, off_t offset, int whence); //repositions the offset of the open file, returns 
+		resulting offset location
+
+Get file information:
+       int stat(const char *pathname, struct stat *buf); // by pathname
+       int fstat(int fd, struct stat *buf); 	// by filedescriptor
+
+
+General dir handling functions:
+	DIR *opendir(const char *name); //returns a dir pointer
+	DIR *fdopendir(int fd); // returns a DIR pointer this time receiving a file descriptor
+	struct dirent *readdir(DIR *dirp); //returns a 'struct dirent', that allows access to directory information
+	
+/*	Pruebas
+ *	Intentos de lectura en directorios
+ *	si el directorio solo tiene -w-		No permite abrirlo;
+ *	si el directorio solo tiene r--		No permite abrirlo
+ *	si el directorio solo tiene --x		Si permite
+ *	
+ *		Siempre que quiera crear una entrada de directorio, necesito que el directorio tenga r--
+ *		Siempre que quiera consultar un listado de directorio, necesito que tenga perimos r--
+ *
+ *	Necesito r-- para poder consultar entradas en el directorio <-A revisar cuando cree
+ *
+ *	Necesito -w- para poder modificar entradas en un directorio (crear/eliminar archivos) <- a revisar cuando extraiga
+ *	Necesito -w- para poder modificar el contenido de un archivo <- a revisar cuando extraiga
+ *	
+ *	Necesito --x para acceder a informacion detallada <-A revisar cuando cree*
+ *
+ */
