@@ -1,3 +1,33 @@
+/* writeToDest
+ * ----------
+ * Writes a string "text" to the file descriptor represented by fd_dest. Since 
+ * we are creating a .mytar, it is assumed that fd_dest is asociated with a
+ * file opened in append mode. 
+ * 
+ * 	fd_dest: An integer representing a file descriptor to the file to write.
+ * 	text: String containing what will be written.
+ * 	size: Size of the string to write.
+ *
+ */
+void writeToDest(int fd_dest, char* text, int size) {	
+
+/* fillField
+ * ----------
+ * This function calculates the remaining space after inserting a variable
+ * size field, and padds it with a special character  == '\2' (by writting) until fitting 
+ * a predefined fixed length field. 
+ *
+ * After that it calls writeToDest to put the field into the .mytar file
+ *
+ * fixed length fields are : FNAME_LIMIT, FMODE_LIMIT, FSIZE_LIMIT
+ *
+ *
+ * 	fd_dest: file descriptor of the file to write.
+ *	content_size:  Size of the field name to write 
+ * 	token_field_size:
+ */
+void fillField(int fd_dest,int content_size, int token_field_size) {
+
 /* setHeadFields
  * ----------
  * Sets the header fields for files. This fields are name, mode and 
@@ -55,3 +85,4 @@ void traverseDir(DIR *dir, char *dirname, int fd) ;
  *
  */
 int main(int argc, char **argv); 
+
