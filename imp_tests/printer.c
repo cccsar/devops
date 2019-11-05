@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <sys/types.h> 
 #include <sys/stat.h> 
-#include <sys/wait.h>
 #include <fcntl.h>  
 #include <dirent.h> 
 #include <string.h> 
@@ -13,6 +12,8 @@
 #define FALSE 0
 
 int main (int argc, char **argv) { 
+
+	fprintf(stdout,"HOLAAAAAAAAAAAAAAAAA \n"); 
 
 	return 0; 
 }

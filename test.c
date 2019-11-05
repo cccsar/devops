@@ -1,8 +1,8 @@
-
 #include <stdio.h> 
 #include <stdlib.h>
 #include <sys/types.h> 
 #include <sys/stat.h> 
+#include <sys/wait.h>
 #include <fcntl.h>  
 #include <dirent.h> 
 #include <string.h> 
@@ -10,42 +10,24 @@
 #include <string.h>
 
 #define TRUE 1
-#define P_664 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
-#define C_W_T O_WRONLY | O_TRUNC | O_CREAT
+#define FALSE 0
 
-int main (int argc, char **argv) { 
+int main (int argc, char *argv[]) {
+	
+	pid_t ps_1; 
+	int st_1; 
 
-	int term_pid, wstatus, my_fd, pid; 
+	ps_1 = fork(); 
+	if (ps_1 == -1)
+		perror("fork");
 
-	if ( !(my_fd = open(argv[2], C_W_T, P_664 )) )
-		perror("open"); 
+	if (ps_1== 0) 
+		execlp(argv[1],argv[1], argv[2], (char*) NULL ) ;		
+		
 
-	if ( !dup2(my_fd,1) )
-		perror("dup2");
+	if (wait(&st_1) == -1) 
+		perror("wait"); 
 
+	return 0; 
 
-	pid = fork(); 	
-	if ( pid == -1)  {
-		perror("fork"); 
-		exit(1);
-	}
-
-	if ( pid == 0) { 
-		/* child */
-		if (execv(argv[1], argv[]) == -1){
-			perror("execv"); 
-			exit(0); 
-		}
-
-	}
-	else { 
-		/* parent */
-		if ( t_pid = wait(&wstatus) == -1 ) /* usar waitpid() */
-			perror("wait"); 
-
-		printf("child with pid: %d terminated\n",t_pid); 
-	}
-
-
-	return 0;
 }
