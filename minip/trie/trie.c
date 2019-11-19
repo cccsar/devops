@@ -223,3 +223,18 @@ void trieDfs (trie *tree, pair *visited, int this, node *dummie) {
 }
 
 
+	/* DGB for trie 
+	visited = (pair *) malloc( sizeof(pair) * inodes.size) ; 
+	for(i_=0; i_<inodes.size; i_++) {
+		visited[i_].first = -1; 
+		visited[i_].second = -1 ;
+	}
+	visited[0].first = 0;
+
+	trieDfs(&inodes, visited, 0, inodes.root); 
+	trieDfsRec(visited, inodes.size );  
+
+	printf("Current size %d\n",inodes.size);
+	printf("Current capacity %d\n",inodes.capacity); 
+	printf("Number of words inserted %d\n",inodes.n_words);
+	*/

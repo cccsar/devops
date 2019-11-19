@@ -8,18 +8,15 @@
 #include <string.h> 
 #include <unistd.h>
 #include <string.h>
+#include "hash.h"
 
 #define TRUE 1
 #define FALSE 0
-#define MAX_PS 10
 
-typedef int* marico; 
+int main (int argc, char **argv) { 
 
-int main (int argc, char *argv[]) {
+	hashTesting(); 
 
-
-	marico hola;  
-
-	printf("Prueba %p\n",hola);
-	return 0;
+	return 0; 
 }
+
