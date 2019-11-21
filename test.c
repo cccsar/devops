@@ -24,10 +24,13 @@ char** prueba(int tumama) {
 int main (int argc, char *argv[]) {
 	char **hola; 
 
-	hola = prueba(10); 
-	sprintf(hola[0],"rolo de pu;sdlkfta");
-	printf("gay %s\n",hola[0]);
+	hola = (char**) malloc( sizeof(char*) * 10);
+	/*hola[0] = (char*) malloc( sizeof(char) * 10);*/
+	/*strcpy(hola[0], (char*) NULL);*/
+	hola[0] = (char*) NULL; 
 
+	if (hola[0] == NULL) 
+		printf("eres marico\n");
 	return 0;
 
 }
