@@ -13,13 +13,21 @@
 #define FALSE 0
 #define MAX_PS 10
 
-typedef int* marico; 
+#define VSIZE 50
 
+char** prueba(int tumama) { 
+	char** eresmarico;
+
+	eresmarico = (char**) malloc( sizeof(char*) * tumama );
+	return eresmarico;
+}
 int main (int argc, char *argv[]) {
+	char **hola; 
 
+	hola = prueba(10); 
+	sprintf(hola[0],"rolo de pu;sdlkfta");
+	printf("gay %s\n",hola[0]);
 
-	marico hola;  
-
-	printf("Prueba %p\n",hola);
 	return 0;
+
 }
