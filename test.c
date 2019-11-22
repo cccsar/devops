@@ -11,26 +11,40 @@
 
 #define TRUE 1
 #define FALSE 0
-#define MAX_PS 10
 
-#define VSIZE 50
+#define SOME_MAX 20
+#define NAME "ls"
+#define MAX_DIGITS 20
 
-char** prueba(int tumama) { 
-	char** eresmarico;
 
-	eresmarico = (char**) malloc( sizeof(char*) * tumama );
-	return eresmarico;
+int intToString(char* arr, int a, int *i) { 
+
+	if( a/10 != 0 )  {
+		*i = intToString(arr, a/10, i) ;
+		arr[*i] = a%(10) + 48; 
+	}
+	else   
+		arr[*i] = a + 48;
+
+	*i += 1;
+
+	return *i; 
 }
 int main (int argc, char *argv[]) {
-	char **hola; 
+	char *prueba; 
+	int i_, size, perico;
 
-	hola = (char**) malloc( sizeof(char*) * 10);
-	/*hola[0] = (char*) malloc( sizeof(char) * 10);*/
-	/*strcpy(hola[0], (char*) NULL);*/
-	hola[0] = (char*) NULL; 
+	perico = 0;
+	prueba = (char *) malloc( sizeof(char)*MAX_DIGITS );
 
-	if (hola[0] == NULL) 
-		printf("eres marico\n");
+	size = intToString(prueba, atoi(argv[1]), &perico);
+	/*prueba[size] = '\0';*/
+
+	for(i_=0; i_<size+1 ; i_++) {
+		printf("%c ",prueba[i_]);	
+	}
+
+	printf("\n");	
+
 	return 0;
-
 }
