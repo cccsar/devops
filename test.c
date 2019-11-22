@@ -17,34 +17,21 @@
 #define MAX_DIGITS 20
 
 
-int intToString(char* arr, int a, int *i) { 
-
-	if( a/10 != 0 )  {
-		*i = intToString(arr, a/10, i) ;
-		arr[*i] = a%(10) + 48; 
-	}
-	else   
-		arr[*i] = a + 48;
-
-	*i += 1;
-
-	return *i; 
-}
 int main (int argc, char *argv[]) {
-	char *prueba; 
-	int i_, size, perico;
+	FILE *fp ; 
+	char* hola; 
 
-	perico = 0;
-	prueba = (char *) malloc( sizeof(char)*MAX_DIGITS );
 
-	size = intToString(prueba, atoi(argv[1]), &perico);
-	/*prueba[size] = '\0';*/
+	if ( !(fp = fopen(argv[1],"r"))  )
+		perror("fopen");
 
-	for(i_=0; i_<size+1 ; i_++) {
-		printf("%c ",prueba[i_]);	
-	}
 
-	printf("\n");	
+	hola = (char*) malloc( sizeof(char) * 10);
+	fscanf(fp,"%s",hola);
+
+	printf("%s\n",hola);
+
+	fclose(fp);
 
 	return 0;
 }
