@@ -93,6 +93,7 @@ int main (int argc, char **argv) {
 	for(i_=0; i_<NSIZE ; i_++) {
 		numbers[i_] = i_;	
 	}	
+
 	/*********************READER SECTION*********************/
 
 
@@ -155,8 +156,7 @@ int main (int argc, char **argv) {
 			}	
 
 
-
-			close(pfd[READ]);
+			close(0);
 			/*free(r_buffer);*/
 			/*free(curr_ps);*/
 
@@ -221,7 +221,7 @@ int main (int argc, char **argv) {
 					perror("sem_post");
 
 
-				close(pfd[WRITE]);
+				close(1);
 				/*free(w_buffer);*/
 				/*free(forked_pid);*/
 
