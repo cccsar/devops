@@ -98,6 +98,7 @@ int main (int argc, char **argv) {
 		numbers[i_] = i_;	
 	}	
 
+
 	/*********************READER SECTION*********************/
 
 
@@ -222,11 +223,7 @@ int main (int argc, char **argv) {
 				/*fprintf(stderr,"FORKEO UN PROCESO ESCRITOR, PID %d\n", getpid());*/
 
 
-
-
-
-
-				for(i_=0; i_<NSIZE ; i_++) {
+				for(i_=0; i_<NSIZE + 1; i_++) {
 
 					if( sem_wait(smp_r) == -1)
 						perror("sem_wait");
@@ -238,7 +235,7 @@ int main (int argc, char **argv) {
 
 					controller_1 = 0;
 
-					if(i_ == NSIZE - 1) {
+					if(i_ == NSIZE ) {
 						controller_1 = -1;
 
 						if( write(1, &controller_1, sizeof(int) ) == -1)
