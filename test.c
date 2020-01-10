@@ -6,6 +6,7 @@
 #include <fcntl.h>  
 #include <dirent.h> 
 #include <string.h> 
+#include <malloc.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -16,22 +17,24 @@
 #define NAME "ls"
 #define MAX_DIGITS 20
 
+#define NEW_SIZE 500
+
+typedef struct packt { 
+
+	void **objects; 
+} packet;
 
 int main (int argc, char *argv[]) {
-	FILE *fp ; 
-	char* hola; 
+	int i_;
+	char * prueba; 
+	FILE *file; 
 
+	prueba = (char *) malloc( sizeof(char) * 20 );
+	file = fopen(argv[1], "r"); 	
 
-	if ( !(fp = fopen(argv[1],"r"))  )
-		perror("fopen");
+	while ( fscanf(file, "%s",prueba) != EOF )  
+		printf("word: %s\tlength: %d\n", prueba,strlen(prueba) );
 
-
-	hola = (char*) malloc( sizeof(char) * 10);
-	fscanf(fp,"%s",hola);
-
-	printf("%s\n",hola);
-
-	fclose(fp);
 
 	return 0;
 }
