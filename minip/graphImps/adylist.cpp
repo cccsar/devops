@@ -31,22 +31,19 @@ using namespace std;
 
 class Graph{ 
 	int n, m;	
-	list<int> *adyl;  
+	vector< list<int> > adyl;  
 	
 public: 
 	Graph(int v, int e) { 
 		int i_ ;
 		n = v;
 		m = e;
-		adyl = (list<int> *) malloc( sizeof(list<int> ) * n)  ;
-		for(i_=0; i_<n ; i_++) {
-			adyl[i_] = new list<int>  ;
-		}	
+		adyl.resize(n); 
 	}
 	int getN() {
 	       return n; 
 	}
-	int getE()  {
+	int getM()  {
 		return  m ;
 	}
 
@@ -56,16 +53,11 @@ public:
 	void addEdge(int u, int v); 
 	void deleteNode(int e); 
 	void deleteEdge(int u, int v);
-	void test();
+
+	list<int> successors(int e) ;
+	int degree(int e); 
 };
 
-void Graph::test(){ 
-	int i_; 
-
-	for(i_=0; i_<n ; i_++) {
-		cout<<"list "<<i_<<"size: "<<adyl[i_].size()<<endl;	
-	}		
-}
 
 void Graph::printGraph() { 
 	int i_; 
@@ -73,38 +65,88 @@ void Graph::printGraph() {
 	for(i_=0; i_<n ; i_++) {
 
 		for(auto it: adyl[i_]) {
-			cout<<it<<" ";   	
-		}	
-		cout<<endl; 
+			cout<<i_<<" "<<it<<endl; 
+		}
 	}
 }
 
 
 void Graph::addNode() { 
-	adyl = (list<int> *) realloc(adyl, sizeof(list<int>) * (n+1)) ;
+	adyl.resize(n+1);
 }
+
 
 void Graph::addEdge(int u, int v) { 
 	adyl[u].push_back(v); 
 
 }
 
+void Graph::deleteNode(int e) { 
+	int i_, count; 
+	list<int>::iterator it; 
+
+	adyl.erase(adyl.begin()+(e-1)); 
+
+	n-=1; 
+
+	//search the whole structure for e, and delete it from lists
+	for (i_=0 ; i_<n ; i_++) { 
+
+		for(it=adyl[i_].begin(); it!=adyl[i_].end(); it++) {
+			if (*it == e-1) {
+				adyl[i_].erase(it); 
+				break; 
+			}
+		}
+	}
+
+}
+
+void deleteEdge(int u, int v) { 
+
+}
+list<int> Graph::successors(int e) {
+	return adyl[e]; 
+}
+
+
+int Graph::degree(int e) { 
+	return adyl[e].size(); 
+}
+
+
+
+void printList(list<int> l) { 
+
+	for( int i: l) 
+		cout<<i<<" "; 
+	cout<<endl; 
+}
+
 
 int main() 
 {
 	int i_, n, m, u, v; 
+	list<int> my_list;
 
 	rii(n, m); 
 
 	Graph G(n,m); 
 
 
-	for(i_=0; i_<G.getN() ; i_++) {
+	for(i_=0; i_<G.getM() ; i_++) {
 		rii(u,v); 
 		G.addEdge(u,v); 	
 	}	
 
 	G.printGraph(); 
+
+	printList(my_list); 
+
+	G.deleteNode(2); 
+
+	G.printGraph(); 
+
 
 
 	return 0; 

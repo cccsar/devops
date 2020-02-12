@@ -23,20 +23,19 @@
 #define pii pair <int, pair<int, int> > 
 #define adl vector< vi > 
 #define wadl vector< vii > 
-#define ib pair <int, bool> 
-#define vb vector< ib > 
-#define hadl vector< vb > 
 
 using namespace std; 
 
 #define MAXS 2000
 
 bool resp[MAXS];
+int degrees[MAXS]; 
 
-bool isEulerian(hadl &graph, int *root) { 
+bool isEulerian(adl &graph, int *root) { 
 	int i_, count; 
 
 	for(i_=0; i_<graph.size(); i++) {
+		degrees[i_] = graph[i_].size(); 
 		if ( graph[i_].size()%2 == 1 ){
 			count++; 
 			*root = i_; 
@@ -52,11 +51,11 @@ bool isEulerian(hadl &graph, int *root) {
 }
 
 
-void adyacents(hadl &graph, int e) {
+void adyacents(adl &graph, int e) {
 	
 }
 
-void insert(hadl &graph, int u, int v) { 
+void insert(adl &graph, int u, int v) { 
 	ib primo, secondo; 
 	
 	primo.first = secondo.first = false; 
@@ -67,11 +66,14 @@ void insert(hadl &graph, int u, int v) {
 	graph[v].push_back(secondo); 
 }
 
+void efs(adyl &graph, int r){
+
+}; 
 
 int main() 
 {
 	int q, i_, j_, n, m, u, v; 
-	hadl graph; 
+	adl graph; 
 
 	graph.resize(MAXS); 
 	ri(q)
@@ -82,12 +84,14 @@ int main()
 			rii(u,v); 
 			insert(graph, u, v) ; 	
 		}		
+
 		if (!isEulerian) 
 			resp[i_] = false; 
 		else { 
 
 		}
 	}
+}
 
 
 
