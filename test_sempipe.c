@@ -17,7 +17,7 @@
 #define WRITE 1
 #define READ 0
 
-#define MAX_PS 20
+#define MAX_PS 1000 
 
 #define MSG_LEN 26 
 #define MSG "Estoy en la RC, mi id es: %d\n"
@@ -34,12 +34,16 @@
 int main (int argc, char **argv) { 
 	int i_;
 
+	/*PROCESS*/
 	pid_t w_pid[MAX_PS], r_pid, term;  
 	int w_status[MAX_PS], r_status, n_ps;
 
+	/*PIPE*/
 	int pfd[2];
 
+	/*SEMAPHORE*/
 	sem_t *mutex, *smp_r, *smp_w; 
+	int trash;
 
 	/*BUFFERS DE LECTURA / ESCRITURA */
 	char *r_buffer;  
@@ -49,11 +53,11 @@ int main (int argc, char **argv) {
 
 	/*OTROS*/
 	int numbers[NSIZE];
-	char newline[1];
-	int trash;
+	int *debug; 
+	int curr_smpval; 
+	int controller_1, term_count ;
+	int *controller_2, *this_num ;
 
-
-	newline[0] = '\n';
 
 
 	/*ELIMINO SEMAFOROS POR SI EXISTEN*/
@@ -94,6 +98,7 @@ int main (int argc, char **argv) {
 		numbers[i_] = i_;	
 	}	
 
+
 	/*********************READER SECTION*********************/
 
 
@@ -101,7 +106,9 @@ int main (int argc, char **argv) {
 		default: 
 			break;
 		case 0:
-			if( ( r_buffer = (char*) malloc( sizeof(char) * MSG_LEN + 1) ) == NULL)
+
+			
+			if( ( r_buffer = (char*) malloc( sizeof(char) * MSG_LEN ) ) == NULL)
 				perror("malloc");
 
 			if( ( curr_ps = (pid_t *) malloc( sizeof(pid_t) ) ) == NULL )  
@@ -119,9 +126,13 @@ int main (int argc, char **argv) {
 
 
 			/*printf("FORKEO EL PROCESO LECTOR, PID %d\n", getpid());*/
+			debug = (int*) malloc(sizeof(int));  /*###*/
+			this_num = (int *) malloc( sizeof(int) );
+			controller_2 = (int *) malloc( sizeof(int) );
+			term_count = 0; 
 
 
-			for(i_=0; i_<n_ps ; i_++) {
+			while( term_count != n_ps ) {
 	
 				/*mientras leer el tamano de mensaje devuelva el tamano de mensaje*/
 				
@@ -134,11 +145,24 @@ int main (int argc, char **argv) {
 
 					/*REGION CRITICA*/
 
-				if( read(0, r_buffer, MSG_LEN) == -1) 
+
+				if( read(0, controller_2, sizeof(int) ) == -1)
 					perror("read");
-					
-				if( read(0, curr_ps, sizeof(pid_t) ) == -1)
-					perror("read");
+
+				if( *controller_2 != -1)  {
+
+					if( read(0, this_num, sizeof(int) ) == -1)
+						perror("read");
+
+				} 
+				else  {
+					term_count++;					
+					printf("terminated already: %d\n",term_count); 
+				}
+				
+				/*###*/
+				/*curr_smpval = sem_getvalue(smp_r, debug); */
+				/*printf("Valor actual del semaforo %d\n",*debug); */
 
 
 					/*FIN DE LA REGION CRITICA*/
@@ -150,9 +174,10 @@ int main (int argc, char **argv) {
 				if( sem_post(smp_r) == -1 )
 					perror("sem_post");
 
-
-				if( printf("%s %d\n", r_buffer, *curr_ps) == -1)
-					perror("printf");
+				
+				/*si un proceso termino escritura, no hace falta imprimir*/
+				if (*controller_2 != -1) 
+					printf("current number: %d\n", *this_num);
 			}	
 
 
@@ -186,39 +211,55 @@ int main (int argc, char **argv) {
 					perror("close");
 
 
-				w_buffer = (char*) malloc( sizeof(char) * MSG_LEN + 1);
+				w_buffer = (char*) malloc( sizeof(char) * MSG_LEN );
 				forked_pid = (pid_t *) malloc( sizeof(pid_t) );
 
 
 				w_buffer = MSG;
 				*forked_pid = getpid();
+				controller_1 = 1;
 
 
 				/*fprintf(stderr,"FORKEO UN PROCESO ESCRITOR, PID %d\n", getpid());*/
 
 
-				if( sem_wait(smp_r) == -1)
-					perror("sem_wait");
+				for(i_=0; i_<NSIZE + 1; i_++) {
 
-				if( sem_wait(mutex) == -1)
-					perror("sem_wait");
+					if( sem_wait(smp_r) == -1)
+						perror("sem_wait");
 
+					if( sem_wait(mutex) == -1)
+						perror("sem_wait");
 
 					/*REGION CRITICA*/
 
-				if( write(1, w_buffer, MSG_LEN) == -1)
-					perror("write");
-				if( write(1, forked_pid, sizeof( pid_t ) )  == -1)
-					perror("write");
+					controller_1 = 0;
+
+					if(i_ == NSIZE ) {
+						controller_1 = -1;
+
+						if( write(1, &controller_1, sizeof(int) ) == -1)
+							perror("write");
+					}
+					else {
+
+						if( write(1, &controller_1, sizeof(int)) == -1)
+							perror("write");
+	
+						if( write(1, &numbers[i_], sizeof(int)) == -1)
+							perror("write");
+					}
+
 
 					/*FIN DE REGION CRITICA*/
 
+					if( sem_post(mutex) == -1)
+						perror("sem_post");
 
-				if( sem_post(mutex) == -1)
-					perror("sem_post");
+					if( sem_post(smp_w) == -1)
+						perror("sem_post");
 
-				if( sem_post(smp_w) == -1)
-					perror("sem_post");
+				}	
 
 
 				close(1);

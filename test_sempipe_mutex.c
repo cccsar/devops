@@ -17,7 +17,7 @@
 #define WRITE 1
 #define READ 0
 
-#define MAX_PS 20
+#define MAX_PS 1000 
 
 
 #define MSG_LEN 26 
@@ -117,8 +117,7 @@ int main (int argc, char **argv) {
 				perror("close");
 
 
-			printf("FORKEO EL PROCESO LECTOR, PID %d\n", getpid());
-
+			/*printf("FORKEO EL PROCESO LECTOR, PID %d\n", getpid());*/
 
 
 			for(i_=0; i_<n_ps ; i_++) {
@@ -157,6 +156,7 @@ int main (int argc, char **argv) {
 
 
 			close(pfd[READ]);
+
 			/*free(r_buffer);*/
 			/*free(curr_ps);*/
 
@@ -194,7 +194,7 @@ int main (int argc, char **argv) {
 				*forked_pid = getpid();
 
 
-				fprintf(stderr,"FORKEO UN PROCESO ESCRITOR, PID %d\n", getpid());
+				/*fprintf(stderr,"FORKEO UN PROCESO ESCRITOR, PID %d\n", getpid());*/
 
 
 				if( sem_wait(smp_r) == -1)
@@ -222,6 +222,7 @@ int main (int argc, char **argv) {
 
 
 				close(pfd[WRITE]);
+
 				/*free(w_buffer);*/
 				/*free(forked_pid);*/
 
@@ -248,7 +249,7 @@ int main (int argc, char **argv) {
 		if( ( term = wait(&w_status[i_]) ) == -1)
 			perror("wait");
 
-		printf("El proceso %d termino exitosamente\n", term);
+		/*printf("El proceso %d termino exitosamente\n", term);*/
 	}	
 	
 

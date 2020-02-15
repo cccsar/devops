@@ -65,7 +65,7 @@ int main (int argc, char **argv) {
 	DIR *dir; 
 	struct stat d_stat; 	
 
-	if ( stat(".", &d_stat) == -1 )
+	if ( stat(argv[1], &d_stat) == -1 )
 		perror("stat"); 
 
 	/* Verificar que es un directorio antes de recorrer */
@@ -74,8 +74,8 @@ int main (int argc, char **argv) {
 		exit(-1);
 	}
 	else { 
-		dir = opendir("."); 
-		traverseDir(dir, ".", argv[1]); 
+		dir = opendir(argv[1]); 
+		traverseDir(dir, argv[1], argv[2]); 
 	}
 
 	return 0; 
