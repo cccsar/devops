@@ -52,10 +52,13 @@ void readGraph(vi graph[], int *n, int *m ) {
 }
 
 
-bool del(int e) { 
-	if (visited[e] == NOTHING ) 
-		return false;
-	return true;
+void printGraph(vi graph[], int size) { 
+	int i_;
+	for(i_=0; i_<size ; i_++) {
+		for (int k : graph[i_]) 
+			cout<<i_<<" "<<k<<endl;	
+	}
+
 }
 
 
@@ -92,16 +95,15 @@ void recoverPath(int size, vi &order) {
 }
 
 
-void printGraph(vi graph[], int size) { 
-	int i_;
-	for(i_=0; i_<size ; i_++) {
-		for (int k : graph[i_]) 
-			cout<<i_<<" "<<k<<endl;	
-	}
-
+//predicate for choosing next path to open
+bool del(int e) { 
+	if (visited[e] == NOTHING ) 
+		return false;
+	return true;
 }
 
 
+//BFS
 void bfs(vi graph[], queue<int> &opened, vi &order, int r) {
 	opened.push(r); 
 	parents[r] = r; 
