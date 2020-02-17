@@ -47,14 +47,14 @@ void dfs_rec(adl &graph, int vtd[], int r) {
 //Algorithm to recover path: goes throug each depth first tree in inverse order and
 //pushes to a stack the found nodes. Then it prints them .
 void rec_path(int vtd[], int size) { 
-	int i_, j_, k , path_count; 
+	int i_, k ; 
 	stack<int> *recovered = new stack<int>[size]; 
-	path_count = 0;
+	vector<int> *order = new vector<int>; 
 
 	for(i_=0; i_<size ; i_++) {
 		
 		if (vtd[i_] != -1) { 
-			path_count++; 
+			order->push_back(i_);
 			k = i_; 
 
 			while ( k != vtd[k] ) { 
@@ -66,10 +66,10 @@ void rec_path(int vtd[], int size) {
 		}
 	}
 
-	for(i_=0; i_<path_count ; i_++) {
-		while(! recovered[i_].empty() ) {
-			cout<<recovered[i_].top()<<" ";	
-			recovered[i_].pop(); 
+	for(int k : *order) {
+		while(! recovered[k].empty() ) {
+			cout<<recovered[k].top()<<" ";	
+			recovered[k].pop(); 
 		}		
 		cout<<endl; 
 	}	
