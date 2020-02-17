@@ -9,6 +9,7 @@
 #include<utility>
 #include<climits> 
 
+using namespace std; 
 
 #define FOR(u,l) for(int i=l; i<u; i++) 
 #define ROF(l,u) for(int i=u; i>l-1; i--) 
@@ -25,7 +26,6 @@ typedef pair <int, pair<int, int> > pii;
 typedef vector< vi > adl; 
 typedef vector< vii > wadl; 
 	
-using namespace std; 
 
 int main() 
 {

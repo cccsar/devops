@@ -31,22 +31,35 @@ typedef vector< vii > wadl;
 
 bool reachm[MAXSIZE][MAXSIZE];
 
-void addEdge(adl &list, int u, int v) { 
-	list[u].push_back(v); 
+void addEdge(vi graph[], int u, int v) { 
+	graph[u].push_back(v); 
 }
 
 
-void reach(adl &list, int u, int v) { 
-	reachm[u][v] = true; 
-	
-	for (int w : list[u]) { 
-		if ( ! reachm[u][w] ) 
-			reach(list, u, w) ; 
+void readGraph(vi graph[], int *n, int *m) { 
+	int i_, u, v; 
+	rii(*n, *m); 
+
+	for(i_=0; i_<*m ; i_++) {
+		rii(u,v); 
+		addEdge(graph, u, v); 
 	}
 }
 
 
-void print_mat(int size) {
+//creates an adyacency matrix based on an adyancy list
+void createMat(vi graph[], int size) { 
+	int i_; 	
+	for(i_=0; i_<size ; i_++) {
+		for(int j_ : graph[i_] ) 
+			reachm[i_][j_] = true;
+	}
+
+}
+
+
+//debugging for adyacency matrix 
+void printMat(int size) {
 	int i_, j_; 
 
 	for(i_=0; i_<size ; i_++) {
@@ -56,8 +69,36 @@ void print_mat(int size) {
 	}
 }
 
+
+//debugging for adyacency list
+void printAdyl(vi graph[], int size) { 
+	int i_; 
+
+	for(i_=0; i_<size ; i_++) {
+		for(int k : graph[i_] ) 
+			cout<<i_<<" "<<k<<endl;
+	}
+
+}
+
+
+//DFS REACH
+void reach(vi graph[], int u, int v) { 
+	reachm[u][v] = true; 
+	
+	for (int w : graph[v] ) {
+		if ( ! reachm[u][w] )
+			reach(graph, u, w) ; 
+	}
+}
+
+
+//ROY WARSHALL for comparison with bfs reach algorithm
 void royWarshall(int size) { 
 	int i_, j_, k_; 
+
+	for(i_=0; i_<size ; i_++) 
+		reachm[i_][i_] = true;
 
 	for(k_=0; k_<size ; k_++) {
 		for(i_=0; i_<size ; i_++) {
@@ -71,38 +112,25 @@ void royWarshall(int size) {
 
 }
 
-void createMat(adl &list) { 
-	int i_; 	
-	for(i_=0; i_<list.size() ; i_++) {
-		for(int j_ : list[i_] ) 
-			reachm[i_][j_] = true;
-	}
 
-}
-
-
-// ###FALTA COMPARAR CONR ROY WARSHALL
 int main() 
 {
-	int i_, j_, n, m, u, v; 
-	adl list; 
+	int i_,  n, m; 
+	vi *graph = new vector<int>[MAXSIZE];
+
+	readGraph(graph, &n, &m) ;
 
 
-	rii(n,m); 
-	list.reserve(n);
-
-	for(i_=0; i_<m ; i_++) {
-		rii(u,v); 			
-		addEdge(list, u, v); 
-	}
-
-	//for(i_=0; i_<n ; i_++) 
-	//	reach(list, i_, i_); 	
+	for(i_=0; i_<n ; i_++) 
+		reach(graph, i_, i_);
 	
-	//createMat(list); 
+	//createMat(graph, n); 
 	//royWarshall(n); 
 
-	print_mat(n); 
+
+	printMat(n); 
+	//printAdyl(graph, n);
+	//printMat(graph); 
 
 	return 0; 
 }

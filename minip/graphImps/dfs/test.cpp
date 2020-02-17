@@ -10,6 +10,8 @@
 #include<climits> 
 
 
+using namespace std; 
+
 #define FOR(u,l) for(int i=l; i<u; i++) 
 #define ROF(l,u) for(int i=u; i>l-1; i--) 
 #define ri(c) scanf("%d",&c)
@@ -25,20 +27,27 @@
 #define adl vector< vi > 
 #define wadl vector< vii > 
 
-
-	
-using namespace std; 
+#define CONST 1000
 
 adl graph;
 
+void foo(vi hola[], int u, int v) { 
+	hola[u].push_back(v);	
+}
 
 int main() 
 {
-	int i_, j_, u, v, n, m; 
-	queue<int> mq;
+	int i_, j_, u, v; 
+	priority_queue<int > hola; 
 
-	mq.push(5);
-	mq.push(6); 
-	cout<<mq.front(); 
-	return 0;
+
+	for(i_=0; i_<10 ; i_++) 
+		hola.push(i_); 
+
+	for(i_=0; i_<10 ; i_++)  {
+		cout<<hola.top()<<" ";
+		hola.pop(); 
+	}
+
+	return 0; 
 }
