@@ -25,50 +25,16 @@ typedef pair <int, int> pi;
 typedef pair <int, pair<int, int> > pii; 
 typedef vector< vi > adl; 
 typedef vector< vii > wadl; 
-
-typedef vector< char > word; 
-typedef vector< word > wlist; 
 	
-#define MAXSIZE 1000
-
-bool valid[MAXSIZE];
-
-void perm(word cc, char letter, word solutions[], word acc, int count) { 
-	acc.push_back(letter);
-	
-	if (cc.size() == 0)  {
-		count++; 
-		solutions[count] = acc;
-	} else { 
-		int i_, size, temp; 
-
-		size = cc.size() ; 	
-
-		for(i_=0; i_<size ; i_++) {
-			temp = cc[i_];
-
-			perm(cc, temp, solutions, acc, count); 	
-
-		}
-	}
-}
 
 int main() 
 {
-	int n, e, i_;
-	word set_char, help, *solutions; 
+	vi hola; 
 
-	ri(n);
-	solutions = new word[MAXSIZE];
-	set_char.reserve(n); 
+	hola.push_back(1); 
+	hola.push_back(2); 
 
-	for (i_=0 ; i_<n+1 ; i_++)  {
-		ri(e); 
-		set_char.push_back(e); 
-	}
+	cout<<hola.front(); 
 
-
-
-	
 	return 0; 
 }
