@@ -8,18 +8,27 @@ using namespace std;
 
 typedef vector< char > word; 
 
-#define MAXSIZE 3628800  // this is 10! to keep a bound of ~34.61MB 
+#define MAXFACT 3628800  // this is 10! to keep a bound of ~34.61MB 
+#define MAXSIZE 10
 
 
-word *permutations = new word[MAXSIZE]; //globalized permutations to reduce args
+word *permutations = new word[MAXFACT]; //globalized permutations to reduce args
+
+typedef struct arglist { 
+	deque<char> charset; 
+	word accumulator; 
+	char e; 
+	int *ind;
+}
 
 
-void perm(deque<char> charset, word accumulator, char e, int *ind) { 
+//void perm(deque<char> charset, word accumulator, char e, int *ind) { 
+void * perm (void * args) { 
 	accumulator.push_back( e );
 	
 
 	if (charset.size() == 0)  {
-		*ind += 1; 
+		*ind += 1;  //think on race condition due to this two assignments
 		permutations[*ind] = accumulator;
 	} 
 	else { 
@@ -58,6 +67,9 @@ int main(int argc, char **argv)
 	char e, current_letter; 
 	word accumulator; 
 	deque<char> character_set; 
+
+	arglist info[MAXSIZE];
+	pthread_t threads[MAXSIZE]; 
 
 	scanf("%d",n); 
 	index = -1;
