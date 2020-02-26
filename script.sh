@@ -14,7 +14,7 @@ RESULT=`ping -q -c 4 -W 5 $1 | tee log_fallas.txt`;
 
 
 #verfica que haya perdida de paquetes
-if [ `echo $RESULT | grep "packet loss" | cut -d "," -f 3 | cut -d "%" -f 1 ` -lt 100 ] ; then 
+if [ `echo $RESULT | grep "packet loss" | cut -d "," -f 3 | cut -d "%" -f 1 ` -gt 0 ] ; then 
 	echo -e "Package loss.\nSending mail to administrator..." ; 
 
 	#obtiene el correo del administrador del servidor DNS del dominio consultado
@@ -24,8 +24,8 @@ if [ `echo $RESULT | grep "packet loss" | cut -d "," -f 3 | cut -d "%" -f 1 ` -l
 	DOMAIN=`echo $FULL | cut -d "." -f 2-`; 
 
 	echo "$UNAME@$DOMAIN";
-	echo 	"To: $UNAME@$DOMAIN\n
-		From: \n 
+	echo -e	"To: $UNAME@$DOMAIN\n
+		From: $USER@$HOSTNAME\n 
 		Subject: Dominio caido \n
 		Buenas, el dominio $1 esta caido" | sendmail -vt;
 	exit 2 ; 
