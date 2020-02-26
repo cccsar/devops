@@ -1,5 +1,5 @@
-PING google.com (172.217.2.206) 56(84) bytes of data.
+PING google.com (216.239.32.117) 56(84) bytes of data.
 
 --- google.com ping statistics ---
 4 packets transmitted, 4 received, 0% packet loss, time 7ms
-rtt min/avg/max/mdev = 65.997/69.456/78.908/5.463 ms
+rtt min/avg/max/mdev = 57.918/75.766/122.442/27.063 ms
