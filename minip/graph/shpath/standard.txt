@@ -1,0 +1,32 @@
+//Implementation for directed graphs
+//
+void addWEdge(vii graph[], int u, int v, int w) { 
+	pi help ;
+
+	help.first = w; 
+	help.second = v;
+
+	graph[u].push_back(help); 
+}
+
+
+void readWGraph(vii graph[], int *n, int *m ) { 
+	int u, v, w, i_;
+
+	rii(*n,*m); 
+	
+	for(i_=0; i_<*m ; i_++) {
+		scanf("%d %d %d", &u, &v, &w); 
+		addWEdge(graph, u, v, w) ;
+	}	
+}
+
+
+void printWGraph(vii graph[], int size) { 
+	int i_;
+	for(i_=0; i_<size ; i_++) {
+		for (pi k : graph[i_]) 
+			cout<<i_<<" "<<k.second<<" "<<k.first<<endl; 
+	}
+
+}
