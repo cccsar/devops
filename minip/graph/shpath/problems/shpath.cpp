@@ -8,7 +8,7 @@
 #include<utility>
 #include<climits> 
 #include<string.h>
-#include<map>
+#include<unordered_map>
 
 using namespace std; 
 
@@ -87,7 +87,7 @@ void dijkstra(vii graph[], int *cost, int *parent, int source) {
 
 
 int checkSubPath(int *cost, int *parent, int u, int v) { 	//this is O(V) ~ single elemental path case
-	int dummie, pummie, s_cost, d_cost; 
+	int dummie, s_cost, d_cost; 
 	bool found = false; 
 
 	dummie = v; 
@@ -128,7 +128,7 @@ int main()
 	string source, dest; 
 
 	pair<string, int> city; 		//pair for dict
-	map<string, int> dict; 			//dict of pair for cities
+	unordered_map<string, int> dict; 			//dict of pair for cities
 						//it is to be queried each time
 
 	for(i_=0; i_<MAXSIZE ; i_++) {
@@ -172,12 +172,16 @@ int main()
 
 			acum += 1; 
 			if (question == -1)  {	//this to avoid repeating much dijstra
+				for(j_=0; j_<n; j_++) { 
+					cost[j_] = INT_MAX; 
+					parent[j_] = -1; 
+				}
 				dijkstra(graph, cost, parent, s_val); 
 				resp[ acum ] = cost[ d_val ] ; 
+
 			}
-			else  {//if not a path already found by dijkstra:
+			else  //if not a path already found by dijkstra:
 				resp[ acum ] = question; 	
-			}
 		}
 			
 
