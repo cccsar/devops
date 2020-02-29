@@ -1,12 +1,13 @@
 #include<iostream> 
 #include<stdio.h>
 #include<algorithm> 
+#include<set> 
 #include<vector>
+#include<deque>
 #include<stack>
 #include<queue>
 #include<utility>
-#include<climits>
-
+#include<climits> 
 
 using namespace std; 
 
@@ -25,8 +26,8 @@ typedef pair <int, pair<int, int> > pii;
 typedef vector< vi > adl; 
 typedef vector< vii > wadl; 
 	
-const int MAXSIZE = 1000;
 
+const int MAXSIZE = 1000;
 //Implementation for ndirected graphs
 //
 void addWEdge(vii graph[], int u, int v, int w) { 
@@ -65,41 +66,6 @@ void printWGraph(vii graph[], int size) {
 }
 
 
-void Dijkstra(vii graph[], int cost[], int parent[], int source, int size) { 
-	priority_queue<pi, vector<pi>, greater<pi> > next_q; 
-	pi current, next; 
-
-	cost[ source ] = 0; 	
-	parent[ source ] = source; 
-
-	current.first = cost[ source ]; 
-	current.second = source; 
-	next_q.push( current ) ;	 //push first node to queue (along with its weight) 
-	
-	while ( !next_q.empty() )  { 
-
-		current = next_q.top(); //pop node with smallest cost
-		next_q.pop(); 	
-
-		for ( pi succ : graph[ current.second ] ) { //visit each successor of popped node
-			//if its current cost is greater than the cost of source node plus edge
-			//update its cost and push it to the queue
-			if ( cost [ succ.second ] > cost [ current.second ] + succ.first ) { 
-				cost [ succ.second ] = cost [ current.second ] + succ.first; //update cost
-				parent[ succ.second ] = current.second; //update parent
-
-				next.first = cost[ succ.second ] ; 
-				next.second = succ.second ; 
-
-				next_q.push( next ); // add succ to q
-			}
-		}
-
-	}
-	
-}
-
-
 void recoverPath(int cost[],int parent[], int size) { 
 	int i_, j_, dummie;
 	stack<int> *paths = new stack<int>[size]; 
@@ -130,40 +96,55 @@ void recoverPath(int cost[],int parent[], int size) {
 }
 
 
-void dbg(int *cost, int *parent, int size) { 
-	int i_;
+void bf(vii graph[], int *cost, int *parent, int source, int size) { 
+	parent[ source ] = source;
+	int i_, count = 0; 
+	bool cond = true; 
+	//the condition cuts the while when no changes are made, thus saving
+	//iterations
 
-	cout<<"Cost"<<endl; 
-	for(i_=0; i_<size ; i_++) {
-		cout<<cost[i_]<<" ";
-	}	
-	cout<<endl; 
+	cost[ source ] = source ;
 
-	cout<<"Parents: "<<endl; 
-	for(i_=0; i_<size ; i_++) {
-		cout<<parent[i_]<<" ";
-	}	
-	cout<<endl; 
+	while (count < size && cond) { 
+		
+		cond = false; 
+		for(i_=0; i_<size ; i_++) { //this two loops make sure every edge 
+			for(pi current: graph[i_]) { //is traversed
+
+				if ( cost[ current.second ] > cost[i_] + current.first) { 
+
+					cost[current.second] = cost[i_] + current.first; 
+					parent[ current.second ] = i_;
+					cond = true; 
+				}
+			}
+		}	
+		count += 1;
+	}
+
+	//### yet to put the negative cycle detection
+
 }
+
 
 int main() 
 {
-	int i_, n, m, root;
-	int cost[MAXSIZE], parent[MAXSIZE]; 
+	int i_, n, m, root; 
+	int cost[MAXSIZE], parent[MAXSIZE];
 	vii *graph = new vii[MAXSIZE]; 
 
 	readWGraph(graph, &n, &m); 
 
-	for (i_=0 ; i_<n ; i_++) { 
-		cost[i_] = INT_MAX; 
+	for(i_=0; i_<n ; i_++) {
+		cost[i_] = INT_MAX;	
 		parent[i_] = -1; 
-	}	
+	}
 
-	ri( root ); 
+	ri( root ) ;
 
-	Dijkstra(graph, cost, parent, root, n);
+	bf(graph, cost, parent, root, n);
+
 	recoverPath(cost, parent, n);
-	
 
 	return 0; 
 }

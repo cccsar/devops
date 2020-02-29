@@ -1,4 +1,4 @@
-//Implementation for directed graphs
+//Implementation for ndirected graphs
 //
 void addWEdge(vii graph[], int u, int v, int w) { 
 	pi help ;
@@ -7,6 +7,10 @@ void addWEdge(vii graph[], int u, int v, int w) {
 	help.second = v;
 
 	graph[u].push_back(help); 
+
+	help.second = u; 
+
+	graph[v].push_back(help);
 }
 
 
@@ -29,4 +33,34 @@ void printWGraph(vii graph[], int size) {
 			cout<<i_<<" "<<k.second<<" "<<k.first<<endl; 
 	}
 
+}
+
+
+void recoverPath(int cost[],int parent[], int size) { 
+	int i_, j_, dummie;
+	stack<int> *paths = new stack<int>[size]; 
+	vector<int> valid; 
+
+
+	for(i_=0; i_<size ; i_++) {
+		
+		if (parent[i_] != -1) {
+			valid.push_back(i_);
+			dummie = i_;	
+			while( dummie != parent[ dummie ] ) { 
+				paths[i_].push( dummie ) ; 
+				dummie = parent[ dummie ];	
+			}	
+			paths[i_].push( dummie );
+		}
+	}		
+
+
+	for(int k : valid)  {
+		while( ! paths[k].empty() ) {
+			cout<<paths[k].top()<<" "; 
+			paths[k].pop();
+		}		
+		cout<<endl;
+	}
 }
