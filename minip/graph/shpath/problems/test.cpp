@@ -29,22 +29,23 @@ typedef vector< vi > adl;
 typedef vector< vii > wadl; 
 	
 
+void foo(int *prepago, int hola) {
+	int i_; 
+	for(i_=0; i_<hola ; i_++) {
+		prepago[i_] = 69;	
+	}	
+}
+
 int main() 
 {
-	int i_, n;
-	string query;
-	map<string, int> dict; 
-	pair<string, int> dummie; 
+	int i_; 
+	int prueba[60]; 
 
-	ri(n); 
-	for(i_=0; i_<n ; i_++) { //do I have to recreate dummie?
-		cin>>dummie.first>>dummie.second; 	
-		dict.insert(dummie); 
+	foo(prueba, 10); 
+
+	for(i_=0; i_<10 ; i_++) {
+		cout<<prueba[i_]<<" "; 
 	}
-	cout<<"which string would you like to query?"<<endl; 
-	cin>>query;
-	
-	cout<<dict[query]<<endl; 
-
-	return 0;
+	cout<<endl;
+	return 0 ;
 }

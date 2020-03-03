@@ -25,15 +25,14 @@ typedef pair <int, int> pi;
 typedef pair <int, pair<int, int> > pii; 
 typedef vector< vi > adl; 
 typedef vector< vii > wadl; 
+typedef vector< pii > jic; 
 	
 const int MAXSIZE = 5000;
 const int TEST = 1000;
 
 int cost[MAXSIZE]; 
-int dummie_cost[MAXSIZE]; 
 int parent[MAXSIZE] ;
-int dummie_parent[MAXSIZE] ;
-int resp[MAXSIZE];
+int resp[MAXSIZE][3];
 
 //Implementation for ndirected graphs
 //
@@ -51,19 +50,17 @@ void addWEdge(vii graph[], int u, int v, int w) {
 }
 
 
-void readWGraph(vii graph[], int *n, int *m ) { 
+void readWGraph(vii graph[], int m) {
 	int u, v, w, i_;
-
-	rii(*n,*m); 
 	
-	for(i_=0; i_<*m ; i_++) {
+	for(i_=0; i_<m ; i_++) {
 		scanf("%d %d %d", &u, &v, &w); 
-		addWEdge(graph, u, v, w) ;
+		addWEdge(graph, u-1, v-1, w) ;
 	}	
 }
 
 
-void printWGraph(vii graph[], int *parent, int *cost, int size) { 
+void printWGraph(vii graph[], int size) { 
 	int i_;
 	for(i_=0; i_<size ; i_++) {
 		for (pi k : graph[i_]) 
@@ -73,14 +70,15 @@ void printWGraph(vii graph[], int *parent, int *cost, int size) {
 }
 
 
-void dijkstra(vii graph[],int *parent, int *cost, int source ) { 
-	priority_queue<pi> next_q; 
+void dijkstra(vii graph[],int this_parent[], int this_cost[], int source ) { 
+	priority_queue<pi, vector<pi>, greater<pi> > next_q; 
 	pi dummie, u; 
+	int i_; 
 
-	cost[ source ] = 0; 
-	parent[ source ] = source; 
+	this_cost[ source ] = 0; 
+	this_parent[ source ] = source; 
 
-	dummie.first = cost[ source ] ; 
+	dummie.first = this_cost[ source ] ; 
 	dummie.second = source; 
 
 	next_q.push(dummie); 
@@ -90,9 +88,9 @@ void dijkstra(vii graph[],int *parent, int *cost, int source ) {
 		next_q.pop(); 
 
 		for(pi v: graph[ u.second ] ) { 
-			if ( cost[ v.second ] > cost[ u.second ] + v.first ) { 
-				cost[ v.second ] = cost[ u.second ] + v.first  ; 
-				parent[ v.second ] = u.second ; 
+			if ( this_cost[ v.second ] > this_cost[ u.second ] + v.first ) { //check out this line
+				this_cost[ v.second ] = this_cost[ u.second ] + v.first  ; 
+				this_parent[ v.second ] = u.second ; 
 
 				dummie.first = cost[ v.second ] ; 
 				dummie.second = v.second;
@@ -104,22 +102,17 @@ void dijkstra(vii graph[],int *parent, int *cost, int source ) {
 }
 
 
-void resetArrays(int *parent, int *cost, int size) { 
-	int i_; 
-	
-	for (i_=0 ; i_<size ; i_++) { 
-		parent[i_] = -1; 
-		cost[i_] = INT_MAX; 
-	}
-}
 
 void perro() { 
 	int i_, n, m; 
 	vii *graph = new vii[MAXSIZE]; 
 	
-	readWGraph(graph, &n, &m); 
+	//readWGraph(graph, &n, &m); 
 
-	resetArrays(parent, cost, n); 
+	for(i_=0; i_<MAXSIZE ; i_++) {
+		parent[i_] = -1; 
+		cost[i_] = INT_MAX; 	
+	}
 
 	dijkstra(graph, parent, cost, 0) ;
 	cout<<"Costo: "<<endl; 
@@ -140,25 +133,36 @@ int main()
 {
 	int c, n, b, j, s, i_, j_, u, v, w, count; 
 	vii *graph = new vii[MAXSIZE] ; 
+	int dummie_cost[MAXSIZE]; 
+	int dummie_parent[MAXSIZE] ;
 
-	resetArrays(parent, cost, MAXSIZE);
-	resetArrays(dummie_parent, dummie_cost, MAXSIZE); 
+	for(i_=0; i_<MAXSIZE ; i_++) {
+		parent[i_] = -1; 
+		dummie_parent[i_] = -1; 
+		cost[i_] = INT_MAX; 	
+		dummie_cost[i_] = INT_MAX; 
+	}
 
 	count = 0;  
 
 	while ( true ) {
 
 		int bc_cost, help, bn_cost, pref, n_pref; 
+		bool change; 
+
+		change = false; 
 
 		riii(j, b, c); 
 		rii(n, s); 
 
 		if ( j == -1) 
 			break; 
-	
-		for (i_=0 ; i_<s ; i_++)  
-			readWGraph(graph, &j, &s );
 
+	
+		readWGraph(graph, s);
+		c -=1;
+		n -=1;
+		b -=1;
 
 		dijkstra(graph, parent, cost, b);//calculate mincost from bar to each vertix and keep cost and forest info 
 
@@ -169,39 +173,50 @@ int main()
 		n_pref = ( pref == c )? n: c; 
 
 		help = pref; 
-	
 					//then run dijstra from charlie's (could also be nito)
 					//house and through each vertix w on charlie's dijtra forest, run dijstra
 					//then compare a = cost[w] + dummie_cost[c] with b = cost[c] and when a goes
 					//greater ( or equal ... ) than a, break
-					//
-		cout<<"fuera"<<endl;			
+
 		while ( help != parent[ help ] ) { 
+
+			for(i_=0; i_<j ; i_++) {
+				dummie_cost[i_] = INT_MAX; 
+				dummie_parent[i_] = -1; 			
+			}
+
 			
 			dijkstra(graph, dummie_cost, dummie_parent, help); 
 
 			if ( cost[ help ] + dummie_cost[ help ] == cost[ n_pref ] ) { 
-				resp[ count ] = cost[ help ] ; 
+				resp[ count ][0] = cost[ help ] ; 
+				resp[ count ][1] = dummie_cost[help] ;  
+				resp[ count ][2] = dummie_cost[n_pref] ; 
+				change = true;
+				break; 
 			}
 
-			resetArrays(dummie_cost, dummie_parent, j); 		//reset size for following dijstra
-
 			help = parent[help] ;
-			cout<<"llego\n";
+		}
+
+		if ( !change ) {
+			resp[ count ][0] = cost[ help ] ; 
+			resp[ count ][1] = cost[ pref ] ;  
+			resp[ count ][2] = cost[ n_pref ] ; 
 		}
 
 	
-		resetArrays(cost, parent, j); 		//clearing
-		for (i_=0 ; i_<j ; i_++)  
+		for (i_=0 ; i_<j ; i_++)   {
+			parent[i_] = -1; 
+			cost[i_] = INT_MAX; 
 			graph[i_].clear(); 	
+		}
 
 		count += 1; 
 	}
 
-
-	for (i_=0 ; i_<count ; i_++) { 
-		cout<<resp[i_]<<endl; 
-	}
+	for (i_=0 ; i_<count ; i_++)  
+		cout<<resp[i_][0]<<" "<<resp[i_][1]<<" "<<resp[i_][2]<<endl; 
 
 	return 0; 
 }
