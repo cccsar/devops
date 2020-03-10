@@ -43,28 +43,26 @@ void addWEdge(vii graph[], int u, int v, int w ) {
 
 
 int myPrim(vii graph[], int root, int size) { 
-	int mincost, count; 
+	int mincost; 
 	priority_queue< pi, vector<pi>, greater<pi> > my_pq; 
 	pi dummie; 
 
 	my_pq.push( {0, root} ); 
 
-	count = 0; 
 	mincost = 0; 
 	
-	while ( !my_pq.empty() && count < size - 1 ) {
+	while ( !my_pq.empty() ) {
 		dummie = my_pq.top(); 
-	       	my_pq.top(); 
+	       	my_pq.pop(); 
 		
-		//De facto error, it won't enter on first iteration
 		if ( !visited[ dummie.second ] ) { 	//if not visisted check successors
 
 			visited[ dummie.second ] = true;  
-			count += 1 ;
 			mincost += dummie.first ; 
 
 			for(pi k : graph[dummie.second]) { 
-				my_pq.push( k ); 
+				if (!visited[k.second])  
+					my_pq.push( k ); 
 			}
 		}
 
@@ -84,7 +82,7 @@ int main()
 		visited[i_] = false; 	
 
 	for(i_=0; i_<m ; i_++) {
-		rii(a,b); 	
+		riii(a,b,c); 	
 		addWEdge(graph, a, b, c); 
 	}
 
