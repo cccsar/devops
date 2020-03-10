@@ -28,7 +28,7 @@ typedef vector< vii > wadl;
 	
 const int MAXS = 1000;
 
-bool visited[MAXS] ;
+int visited[MAXS] ;
 
 
 void addWEdge(vii graph[], int u, int v, int w ) { 
@@ -57,14 +57,16 @@ int myPrim(vii graph[], int root, int size) {
 	       	my_pq.top(); 
 		
 		//De facto error, it won't enter on first iteration
-		if ( !visited[ dummie.second ] ) { 	//if not visisted check successors
+		if (visited[ dummie.second ] > dummie.first) { 	//if not visisted check successors
 
-			visited[ dummie.second ] = true;  
+			visited[ dummie.second ] = dummie.first ;
 			count += 1 ;
 			mincost += dummie.first ; 
 
 			for(pi k : graph[dummie.second]) { 
-				my_pq.push( k ); 
+
+				if ( visited[k.second] > k.first)  	//if sucessor not visited, push it
+					my_pq.push( k ) ; 
 			}
 		}
 
@@ -80,8 +82,9 @@ int main()
 	vii *graph = new vii[MAXS]; 
 
 	rii(n,m); 
-	for(i_=0; i_<MAXS ; i_++) 
-		visited[i_] = false; 	
+	for(i_=0; i_<MAXS ; i_++) {
+		visited[i_] = INT_MAX; 	
+	}
 
 	for(i_=0; i_<m ; i_++) {
 		rii(a,b); 	
