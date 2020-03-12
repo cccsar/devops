@@ -25,7 +25,8 @@ typedef pair <int, int> pi;
 typedef pair <int, pair<int, int> > pii; 
 typedef vector< vi > adl; 
 typedef vector< vii > wadl; 
-	
+
+const int MAXINT = 2147483647;
 
 int main() 
 {
