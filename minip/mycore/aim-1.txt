@@ -1,0 +1,6 @@
+cat
+wc
+tac
+nl
+base32?
+base64?
