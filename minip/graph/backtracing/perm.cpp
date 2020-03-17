@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	word accumulator; 
 	deque<char> character_set; 
 
-	scanf("%d",n); 
+	scanf("%d", &n); 
 	index = -1;
 	fact_n = fact(n);
 
