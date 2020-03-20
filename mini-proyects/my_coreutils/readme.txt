@@ -1,11 +1,12 @@
 Aimed commands: 
-cat
-wc #
-tac
-nl
-base32?
-base64?
 
+	cat
+	wc	 # <- lacks flag '-'
+	tac
+	nl
+	base32?
+	base64?
+	
 ######
 
 create script to automate inclusion to executables bucket everytime 
