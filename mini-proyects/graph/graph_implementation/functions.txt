@@ -1,0 +1,11 @@
+init
+create
+adyacents
+successors
+predecessors
+insert
+delete
+simetric
+complement
+nVertex **
+nEdges **
