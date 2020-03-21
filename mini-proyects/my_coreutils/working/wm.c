@@ -33,6 +33,15 @@
 #define BUFFSIZE 512
 #define NOPTS 4
 
+//colors
+#define RED "\033[1;31m" 
+#define WHITE "\033[0;37m"
+
+//file desc
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 
 //structures and global stuff
 int flags[NOPTS]; 
@@ -59,8 +68,25 @@ struct pair_int {
 }typedef pi;
 
 
+void colorEWrapper(int fd, const char* string, int flag){ 
+	int tty = isatty(fd); 
+
+	if ( tty )  
+		fprintf(stderr,"%s",RED) ;	
+
+	if ( flag )  
+		perror(string); 
+	else  
+		fprintf(stderr,"%s",string); 	
+
+	if ( tty )
+		fprintf(stderr,"%s",WHITE); 
+}
+
+
+//help flag overrides other flags 
 pi parse(int argc, char **argv, char** files) { 
-	int i_, j_, nflags, fcount, longw; 
+	int i_, j_, nflags, fcount, breaker; 
 	pi resp; 
 
 	resp.first = -1 ;
@@ -72,8 +98,8 @@ pi parse(int argc, char **argv, char** files) {
 		j_ = 1 ;
 		if ( argv[i_][0] == '-' ) { 
 
-			longw = 1; 
-			while ( argv[i_][j_] != '\0' && longw) { 
+			breaker = TRUE; //this is to break wloop in case of error cond
+			while ( argv[i_][j_] != '\0' && breaker) { 
 
 				switch( argv[i_][j_] ) { 
 					case 'l': 
@@ -104,6 +130,7 @@ pi parse(int argc, char **argv, char** files) {
 
 							strcpy( word, argv[i_] + 2 ); 
 
+							//INCORPORATE HELP FLAG ###
 							if ( strcmp(word, LINE) == 0 ) { 
 								flags[0] = TRUE; 
 								nflags += 1; 
@@ -121,15 +148,17 @@ pi parse(int argc, char **argv, char** files) {
 								nflags += 1; 
 							}
 							else  
-								fprintf(stderr, "mywc: Not a valid flag\n");
+								colorEWrapper(STDERR, "Not a valid flag\n", FALSE); 
 
 							free(word); 
 						}
 
-						longw = 0 ; 
+						breaker = FALSE ; 
 						break; 
 					default: 
-						fprintf(stderr, "mywc: Not a valid flag\n");
+						colorEWrapper(STDERR, "Not a valid flag", FALSE ) ;
+
+						breaker = FALSE;
 				}
 	
 				j_++ ;
@@ -171,9 +200,11 @@ void updateAttrib(attrib *flw, int fd, int size) {
 	int i_, rd, run, prev, word, temp;
 	char buff[BUFFSIZE]; 
 
-	rd = temp =  word = run =  0 ;
+	word = FALSE; 
+	rd = temp = run =  0 ;
 	prev = -1; 
 
+	// include break for reading from stdin ### 
 	while ( run < size ) { 
 
 		rd = read(fd, buff, BUFFSIZE); 
@@ -185,14 +216,14 @@ void updateAttrib(attrib *flw, int fd, int size) {
 				// number of words and change word state
 				if ( word ) { 
 					flw->nwords += 1; 
-					word = 0 ;
+					word = FALSE ;
 				}
 			}
 			else { 
 				//if not whitespace and previously not a word, 
 				//change word state
 				if ( !word )  
-					word = 1 ;
+					word = TRUE ;
 			}
 
 
@@ -202,12 +233,11 @@ void updateAttrib(attrib *flw, int fd, int size) {
 				flw->nlines += 1; 
 
 				if ( temp > prev) 
-					prev = temp ; 		
+					prev = temp ; 	//compute maximum line length
 				temp = 0 ;
 			}
-			else { 
+			else  
 				temp +=1;
-			}
 
 			flw->nbytes += 1; 
 		}	
@@ -229,39 +259,40 @@ int main (int argc, char **argv) {
 
 	initAttrib(&total); 
 
-	//info holds the number of flags called and the number of files parsed from input
-	info = parse(argc, argv, files); 
+	info = parse(argc, argv, files); //info.first = # of flags, info.second = # of files
 
 	if ( info.first == -1)  {
-		fprintf(stderr,"wm: Error parsing\n");	
+		colorEWrapper(STDERR, "Error parsing\n", FALSE); 
 		exit(-1) ;
 	}
 
 
 	for(i_=0; i_<info.second ; i_++) { 
 
-		initAttrib( &follow[i_] ) ; //itialize attributes
+		initAttrib( &follow[i_] ) ; //initialize attributes
 
-		if ( (fd = open( files[i_], O_RDONLY) ) == -1 ) { 
-			fprintf(stderr,"\033[1;31m"); 
-			perror("wm"); 
+		if ( files[i_][0] != '-' ) { 
 
-			follow[i_].valid = FALSE ;
-			continue;
+			if ( (fd = open( files[i_], O_RDONLY) ) == -1 ) { 
+				colorEWrapper(STDERR, "open", TRUE); 
+	
+				follow[i_].valid = FALSE ;
+				continue;
+			}
+			
+			if ( (stat( files[i_], & check[i_] )) == -1) { 
+				colorEWrapper(STDERR, "stat", TRUE); 
+	
+				close(fd); 
+				follow[i_].valid = FALSE ;
+				continue; 
+			}
+
+
+			updateAttrib( &follow[i_], fd, check[i_].st_size ) ; 
 		}
-		
-		if ( (stat( files[i_], & check[i_] )) == -1) { 
-			fprintf(stderr,"\033[1;31m"); 
-			perror("wm"); 
-
-			close(fd); 
-			follow[i_].valid = FALSE ;
-			continue; 
-		}
-
-
-		updateAttrib( &follow[i_], fd, check[i_].st_size ) ; 
-
+		else 
+			updateAttrib( &follow[i_], STDIN, -1 ) ; //here consider receiving input from stdin ### 
 		close(fd); 
 	}
 
@@ -295,7 +326,10 @@ int main (int argc, char **argv) {
 
 	if ( info.second > 1 ) {	//this doesn't consider failed files
 					//wc doesn't either tough
-		if ( flags[0] || info.first == 0 ) 
+		//if i-th flag set or no flags given, print corresponding attrib
+		//and accumulate for total attribs
+
+		if ( flags[0] || info.first == 0 ) 	
 			printf("%1d ", total.nlines ) ; 
 		if ( flags[1] || info.first == 0 ) 
 			printf("%1d ", total.nwords ) ; 

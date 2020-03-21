@@ -1,7 +1,11 @@
 Aimed commands: 
 
 	cat
-	wc	 # <- lacks flag '-'
+	wc	
+		lacks flags '-' and '--help' <- help overrides other flags	
+		enhace colored output
+		find how to read from stdin and continue execution after 
+			some break signal
 	tac
 	nl
 	base32?
