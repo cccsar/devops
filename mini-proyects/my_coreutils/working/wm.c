@@ -27,6 +27,7 @@
 #define BYTE "bytes"
 #define LENGTH "max-line-length"
 #define LINE "lines"
+#define HELP "help"
 
 //limits
 #define FLIMIT 100
@@ -42,9 +43,22 @@
 #define STDOUT 1
 #define STDERR 2
 
+//messages
+#define HELPMESSAGE "wm counts metrics of a file. When invoked with no options\n\
+it counts the number of words, lines and bytes.\n\n\
+options:\n\
+\t-w --words\t\tnumber words of the file\n \
+\t-c --bytes\t\tnumber bytes of the file\n \
+\t-l --lines\t\tnumber lines of the file\n \
+\t-L --max-line-lenght\toutput the maximum line lenght \n \
+\t--help\t\t\tshow this help\n \
+\t- read form standard input\n \
+\nDone by cCc\n"
+
 
 //structures and global stuff
 int flags[NOPTS]; 
+int breaker; 
 
 struct attributes{ 
 	int valid; //this is to validate associated file
@@ -68,8 +82,15 @@ struct pair_int {
 }typedef pi;
 
 
+void sigIntHandler() { //signal handler to change state of breaker glob
+	breaker = FALSE; 
+}
+
+
 void colorEWrapper(int fd, const char* string, int flag){ 
 	int tty = isatty(fd); 
+	
+	fprintf(stderr,"wm: ");
 
 	if ( tty )  
 		fprintf(stderr,"%s",RED) ;	
@@ -86,7 +107,7 @@ void colorEWrapper(int fd, const char* string, int flag){
 
 //help flag overrides other flags 
 pi parse(int argc, char **argv, char** files) { 
-	int i_, j_, nflags, fcount, breaker; 
+	int i_, j_, nflags, fcount, helper; 
 	pi resp; 
 
 	resp.first = -1 ;
@@ -98,8 +119,8 @@ pi parse(int argc, char **argv, char** files) {
 		j_ = 1 ;
 		if ( argv[i_][0] == '-' ) { 
 
-			breaker = TRUE; //this is to break wloop in case of error cond
-			while ( argv[i_][j_] != '\0' && breaker) { 
+			helper = TRUE; //this is to break wloop in case of error cond
+			while ( argv[i_][j_] != '\0' && helper) { 
 
 				switch( argv[i_][j_] ) { 
 					case 'l': 
@@ -131,6 +152,8 @@ pi parse(int argc, char **argv, char** files) {
 							strcpy( word, argv[i_] + 2 ); 
 
 							//INCORPORATE HELP FLAG ###
+							if ( strcmp(word, HELP) == 0 ) 
+								return resp; 
 							if ( strcmp(word, LINE) == 0 ) { 
 								flags[0] = TRUE; 
 								nflags += 1; 
@@ -153,19 +176,28 @@ pi parse(int argc, char **argv, char** files) {
 							free(word); 
 						}
 
-						breaker = FALSE ; 
+						helper = FALSE ; 
 						break; 
 					default: 
 						colorEWrapper(STDERR, "Not a valid flag", FALSE ) ;
 
-						breaker = FALSE;
+						helper = FALSE;
 				}
 	
 				j_++ ;
 			}
+
+			//include '-' as a file when encountered
+			if( argv[i_][1] == '\0') { //this could be enhanced for readibility ### 
+				files[fcount] = (char*) malloc( sizeof(char) ) ;  		
+				strcpy( files[fcount], argv[i_] ) ; 
+	
+				fcount +=1; 
+			}
 		}
 		else { 
 
+			//include anything not beggining with '-' as a file when encountered
 			files[fcount] = (char*) malloc( sizeof(char) * strlen(argv[i_]) ) ;  		
 			strcpy( files[fcount], argv[i_] ) ; 
 
@@ -174,9 +206,10 @@ pi parse(int argc, char **argv, char** files) {
 	}	
 
 	//udpate response
-	resp.first = nflags; 
-	resp.second = fcount; 
-
+	if( nflags > 0 || fcount >0 ) { 
+		resp.first = nflags; 
+		resp.second = fcount; 
+	}
 	return resp; 
 }
 
@@ -197,17 +230,23 @@ int isWhiteSpace(char e) {
 
 
 void updateAttrib(attrib *flw, int fd, int size) { 
-	int i_, rd, run, prev, word, temp;
+	int i_, rd, run, prev, word, temp; 
 	char buff[BUFFSIZE]; 
 
 	word = FALSE; 
 	rd = temp = run =  0 ;
 	prev = -1; 
 
-	// include break for reading from stdin ### 
-	while ( run < size ) { 
+	breaker = (size == -1)? TRUE: FALSE; 
 
-		rd = read(fd, buff, BUFFSIZE); 
+	while ( run < size || breaker) { 
+
+		rd = read(fd, buff, BUFFSIZE);  
+		//to enhance: How to disable reading with a signal without
+		//having to wait for next read? <-using signals
+
+		if ( !breaker && size ==-1) //this upsets me ### 
+			break; 
 
 		for(i_=0; i_<rd ; i_++) {
 
@@ -242,7 +281,8 @@ void updateAttrib(attrib *flw, int fd, int size) {
 			flw->nbytes += 1; 
 		}	
 
-		run += rd; 
+		if ( !breaker && size != -1)  //this upsets me ###
+			run += rd; 
 	}	
 
 	flw->maxlength = prev ;
@@ -257,9 +297,17 @@ int main (int argc, char **argv) {
 	attrib follow[FLIMIT], total; 
 	pi info; 
 
+	void (*old_handler)(); 
+
+
+	old_handler = signal(SIGINT, sigIntHandler ); 
 	initAttrib(&total); 
 
 	info = parse(argc, argv, files); //info.first = # of flags, info.second = # of files
+	if( info.second == -1 ) { //if not even a file or flag, or help flag, print help message
+		printf("%s",HELPMESSAGE); 
+		exit(0); 
+	}
 
 	if ( info.first == -1)  {
 		colorEWrapper(STDERR, "Error parsing\n", FALSE); 
@@ -274,14 +322,14 @@ int main (int argc, char **argv) {
 		if ( files[i_][0] != '-' ) { 
 
 			if ( (fd = open( files[i_], O_RDONLY) ) == -1 ) { 
-				colorEWrapper(STDERR, "open", TRUE); 
+				colorEWrapper(STDERR, "", TRUE); 
 	
 				follow[i_].valid = FALSE ;
 				continue;
 			}
 			
 			if ( (stat( files[i_], & check[i_] )) == -1) { 
-				colorEWrapper(STDERR, "stat", TRUE); 
+				colorEWrapper(STDERR, "", TRUE); 
 	
 				close(fd); 
 				follow[i_].valid = FALSE ;
@@ -290,10 +338,11 @@ int main (int argc, char **argv) {
 
 
 			updateAttrib( &follow[i_], fd, check[i_].st_size ) ; 
+
+			close(fd); 
 		}
 		else 
-			updateAttrib( &follow[i_], STDIN, -1 ) ; //here consider receiving input from stdin ### 
-		close(fd); 
+			updateAttrib( &follow[i_], STDIN, -1 ) ; 
 	}
 
 	//printing output: if no flags specied default is to print
