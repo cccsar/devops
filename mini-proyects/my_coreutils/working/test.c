@@ -13,49 +13,36 @@
 
 #define TRUE 1
 #define FALSE 0
+#define MAXREAD 0x7ffff000
 
-#define BUFFS 512	
+#define BUFFS 512
 #define STDIN 0
-#define TOK 'a'
-#define REP '$'
 
-int guard; 
+int glob; 
 
-void intHandler() { 
-	guard = FALSE; 
-	printf("guard: %d\taddress:%p\n",guard, &guard); 
+void handler() { 
+	glob = FALSE; 
 }
 
 int main(int argc, char *argv[])
 {
-  int  i_, k;
-  char hola[BUFFS]; 
+	int rd; 
+	char test[BUFFS]; 
+	glob = TRUE; 
 
-  void (*old_sh)();
-  __sighandler_t old_h; 
+	void (*hdl)(); 
 
-  guard = TRUE; //init breaker
+	hdl = signal(SIGSTOP, handler); 
 
-  old_sh = signal(SIGINT, intHandler ) ; //update handler
+	while (glob ) { 
+		fprintf(stderr,"Antes\n"); 
+		rd = read(0, test, BUFFS); 
+		if ( glob ) { 
+			fprintf(stderr,"Despues\n"); 
 
- 
-  while ( guard ) { //think on how to interrupt any time 
+			fprintf(stderr,"read: %d, word: %s\n", rd, test); 
+		}
+	}
 
-	k = read(0, hola, BUFFS); 
-
-	printf("ARRIBA\n"); 
-	for(i_=0; i_<k ;i_++) { 
-		if (hola[i_] == 'a' ) 
-			printf("found\n"); 
-	}	
-
-	if ( !guard) 
-		break; 
-	printf("guard: %d\n",guard); 
-	printf("ABAJO\n");
-  }
-
-  signal(SIGINT , old_sh); 
-  
-  return 0; 
+	return 0; 
 }
