@@ -1,0 +1,11 @@
+SDL 
+Networking in C
+continue mycoreutils
+LDC homework
+learn bout' game programming
+other projects: sudoku with backtracking
+
+go further in competitive programing
+debug graph problems and finish them 
+begin dp list
+
