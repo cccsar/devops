@@ -9,3 +9,9 @@ go further in competitive programing
 debug graph problems and finish them 
 begin dp list
 
+
+----- 
+
+work on poll directory for executables (testing commands and shellscripts) 
+that's kept synchronized on both shinji and cccsar (using either ssh or a 
+script based rsync)
