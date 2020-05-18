@@ -2,7 +2,6 @@
 #include<stdio.h>
 #include<vector>
 #include<deque>
-#include<pthread.h>
 
 using namespace std; 
 
@@ -44,9 +43,7 @@ int fact(long long n) {
 	int i_, acc; 
 	acc = 1; 
 
-	for (i_=2; i_<=n ; i_++) { 
-		acc = acc * i_; 	
-	}
+	for (i_=2; i_<=n ; i_++)  acc = acc * i_; 	
 
 	return acc;
 }

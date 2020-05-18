@@ -1,0 +1,5 @@
+tcpdump interesting flags: 
+-i interface
+-h host
+-w write to file (preferibly ending in .cap)
+-c count of packets to be captured
