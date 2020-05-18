@@ -98,7 +98,7 @@ void colorEWrapper(int fd, const char* string, int flag){
 	if ( flag )  
 		perror(string); 
 	else  
-		fprintf(stderr,"%s",string); 	
+		fprintf(stderr,"%s\n",string); 	
 
 	if ( tty )
 		fprintf(stderr,"%s",WHITE); 

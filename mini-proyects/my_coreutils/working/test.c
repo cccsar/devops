@@ -26,23 +26,7 @@ void handler() {
 
 int main(int argc, char *argv[])
 {
-	int rd; 
-	char test[BUFFS]; 
-	glob = TRUE; 
-
-	void (*hdl)(); 
-
-	hdl = signal(SIGSTOP, handler); 
-
-	while (glob ) { 
-		fprintf(stderr,"Antes\n"); 
-		rd = read(0, test, BUFFS); 
-		if ( glob ) { 
-			fprintf(stderr,"Despues\n"); 
-
-			fprintf(stderr,"read: %d, word: %s\n", rd, test); 
-		}
-	}
-
+	int d, i_; 
 	return 0; 
 }
+
